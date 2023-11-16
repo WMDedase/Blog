@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Chat App Documentation</title>
+</head>
+<body>
+
+    <header>
+            <h1>Simple Real-Time Chat App Documentation</h1>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#server">Server</a></li>
+            <li><a href="#client">Client</a></li>
+        </ul>
+    </nav>
+    <section class="introduction" id="server">
+        <h2>Simple Real-time Chat App using Python Sockets + Tkinter<br></h2>
+        <p>
+            <i>Published on November 15, 2023<br>Author: Whacky M. Dedase<br><br></i>
+        </p>
+
+        <p>
+            Welcome!<br><br> Today, we’ll be delving into the creation of a Python chat application—a simple digital chatroom facilitating communication between users. This application is divided into two components: a server (server.py) and a client (client.py). The server and client work in tandem, enabling seamless communication.
+        </p>
+
+    </section>
+
+    <section class="explanation">
+        <h2>SERVER</h2>
+        <div class="content">
+            <p>
+                <strong>Overview:</strong> server.py functions as the backbone of our chat application, serving as the server-side script responsible for managing connections and message distribution.
+            </p>
+            <p>Server.py syntax:</p>
+            <pre>
+                <code class="python">
+            import socket
+            import threading
+
+            HOST = '127.0.0.1'
+            PORT = 6060  # You can use any port between 0 to 65535
+            LISTENER_LIMIT = 5
+            active_clients = []  # List of all currently connected users
+
+            # Function to listen for upcoming messages from a client
+            def listen_for_messages(client, username):
+
+                while 1:
+                    try:
+                        message = client.recv(2048).decode('utf-8')
+                        if not message:
+                            break  # Break the loop if the client disconnects
+                        final_msg = username + '~' + message
+                        send_messages_to_all(final_msg)
+
+                    except (ConnectionAbortedError, ConnectionResetError):
+                        print(f"Connection with client {username} unexpectedly terminated.")
+                        remove_client(username)
+                        break
+
+            # Function to send message to a single client
+            def send_message_to_client(client, message):
+                try:
+                    client.sendall(message.encode())
+                except (ConnectionAbortedError, ConnectionResetError):
+                    print("Error sending message to client. Client may have disconnected unexpectedly.")
+
+            # Function to send any new message to all the clients that
+            # are currently connected to this server
+            def send_messages_to_all(message):
+                for user in active_clients:
+                    send_message_to_client(user[1], message)
+
+            # Function to handle client
+            def client_handler(client):
+                try:
+                    while 1:
+                        username = client.recv(2048).decode('utf-8')
+                        if username != '':
+                            active_clients.append((username, client))
+                            prompt_message = "SERVER~" + f"{username} added to the chat"
+                            send_messages_to_all(prompt_message)
+                            break
+                        else:
+                            print("Client username is empty")
+
+                    threading.Thread(target=listen_for_messages, args=(client, username,)).start()
+
+                except (ConnectionAbortedError, ConnectionResetError):
+                    print("Connection with a new client unexpectedly terminated.")
+
+            # Function to remove a client from the active_clients list
+            def remove_client(username):
+                for user in active_clients:
+                    if user[0] == username:
+                        active_clients.remove(user)
+                        print(f"Client {username} removed from the active clients list.")
+
+            # Main function
+            def main():
+                # Creating the socket class object
+                # AF_INET: we are going to use IPv4 addresses
+                # SOCK_STREAM: we are using TCP packets for communication
+                server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+                # Creating a try catch block
+                try:
+                    # Provide the server with an address in the form of
+                    # host IP and port
+                    server.bind((HOST, PORT))
+                    print(f"Running the server on {HOST} {PORT}")
+                except:
+                    print(f"Unable to bind to host {HOST} and port {PORT}")
+
+                # Set server limit
+                server.listen(LISTENER_LIMIT)
+
+                # This while loop will keep listening to client connections
+                while 1:
+                    try:
+                        client, address = server.accept()
+                        print(f"Successfully connected to client {address[0]} {address[1]}")
+                        threading.Thread(target=client_handler, args=(client,)).start()
+
+                    except (ConnectionAbortedError, ConnectionResetError):
+                        print("Error accepting a new client. Connection may have been unexpectedly terminated.")
+
+            if __name__ == '__main__':
+                main()
+
+            </code>
+        </pre>
+            <p>
+                <strong>Key Points:</strong>
+                <ul>
+                    <li>Uses the <code>socket</code> module to create a TCP server on a specified IP address <code>HOST</code> and port <code>PORT</code>.</li>
+                    <li>Accepts incoming client connections and spawns a new thread <code>client_handler</code> for each client.</li>
+                    <li>Registers clients with unique usernames and broadcasts join messages to all clients.</li>
+                    <li>Handles incoming and outgoing messages between clients, managing disconnections gracefully.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>Important Functions:</strong>
+                <ul>
+                    <li><code>listen_for_messages</code> Listens for messages from a specific client and broadcasts them to all clients.</li>
+                    <li><code>send_message_to_client</code> Sends a message to a specific client, handling unexpected disconnections.</li>
+                    <li><code>client_handler</code>: Manages the lifecycle of a client, from connection to disconnection.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>CMD Syntax:</strong> 
+                    <img src="/servercmd.png"></img>
+            </p>
+            <p>
+                <strong>Usage:</strong> Execute this script on the server machine to initiate the chat server.
+            </p>
+        </div>
+    </section>
+
+    <section class="explanation" id="client">
+        <h2>CLIENT</h2>
+        <div class="content">
+            <p>
+                <strong>Overview:</strong> client.py acts as the client-side component, representing a user's interface for interacting with the chat server.
+            </p>
+            <p>Client.py syntax:</p>
+            <pre>
+                <code class="python">
+            import socket
+            import threading
+            import tkinter as tk
+            from tkinter import scrolledtext
+            from tkinter import messagebox
+
+            HOST = '127.0.0.1'
+            PORT = 6060
+
+            LIGHT_GREY = '#F0F0F0'
+            DARK_GREY = '#707070'
+            BLUE = '#0099FF'
+            WHITE = "#ffffff"
+            FONT = ("Arial", 14)
+            BUTTON_FONT = ("Arial", 12)
+            MESSAGE_FONT = ("Arial", 12)
+
+            # Creating a socket object
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            def add_message(message, is_user=False):
+                message_box.config(state=tk.NORMAL)
+                if is_user:
+                    message_box.insert(tk.END, f"You: {message}\n", "user_message")
+                else:
+                    message_box.insert(tk.END, f"{message}\n", "other_message")
+                message_box.config(state=tk.DISABLED)
+                message_box.see(tk.END)
+
+            def connect(event=None):
+                try:
+                    client.connect((HOST, PORT))
+                    print("Successfully connected to server")
+                    add_message("Successfully connected to the server")
+                except:
+                    messagebox.showerror("Unable to connect to server", f"Unable to connect to server {HOST} {PORT}")
+
+                username = username_textbox.get()
+                if username != '':
+                    client.sendall(username.encode())
+                else:
+                    messagebox.showerror("Invalid username", "Username cannot be empty")
+
+                threading.Thread(target=listen_for_messages_from_server, args=(client,)).start()
+
+                username_frame.place_forget()  # Hide username frame
+                message_frame.pack(expand=True, fill=tk.BOTH)  # Show messaging frame
+
+                username_textbox.config(state=tk.DISABLED)
+                username_button.config(state=tk.DISABLED)
+
+            def send_message(event=None):
+                message = message_textbox.get()
+                if message != '':
+                    client.sendall(message.encode())
+                    message_textbox.delete(0, len(message))
+                else:
+                    messagebox.showerror("Empty message", "Message cannot be empty")
+
+            root = tk.Tk()
+            root.geometry("600x600")
+            root.title("Simple Chat App")
+            root.resizable(False, False)
+            root.config(bg=LIGHT_GREY)
+
+            # Username Frame
+            username_frame = tk.Frame(root, bg=LIGHT_GREY, bd=5, relief=tk.GROOVE)
+            username_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+            username_label = tk.Label(username_frame, text="Enter Your Username", font=("Arial", 18, "bold"), bg=LIGHT_GREY, fg=DARK_GREY)
+            username_label.pack(pady=(10, 5))
+
+            username_textbox = tk.Entry(username_frame, font=("Arial", 14), bg=WHITE, fg=DARK_GREY, width=20, bd=2, relief=tk.GROOVE)
+            username_textbox.pack(pady=5)
+
+            username_button = tk.Button(username_frame, text="Join Chat", font=("Arial", 12, "bold"), bg=BLUE, fg=WHITE, height=1, command=connect, bd=2, relief=tk.GROOVE)
+            username_button.pack(pady=10)
+
+            # Bind the <Return> key event to connect function
+            username_textbox.bind("<Return>", connect)
+
+            # Message Frame
+            message_frame = tk.Frame(root, bg=WHITE, bd=5, relief=tk.GROOVE)
+            message_frame.pack(expand=True, fill=tk.BOTH)
+            message_frame.pack_forget()  # Initially hide messaging frame
+
+            message_box = scrolledtext.ScrolledText(message_frame, font=MESSAGE_FONT, bg=WHITE, fg=DARK_GREY, width=67, height=26.5)
+            message_box.config(state=tk.DISABLED)
+            message_box.pack(padx=10, pady=10, ipady=8, ipadx=8, fill=tk.BOTH, expand=True)  # Place the message box
+
+            message_textbox = tk.Entry(message_frame, font=("Arial", 14), bg=WHITE, fg=DARK_GREY, bd=2, relief=tk.GROOVE)
+            message_textbox.pack(pady=10, padx=10, ipady=8, ipadx=8, fill=tk.X)  # Centered message textbox with padding
+
+            # Bind the <Return> key event to send_message function
+            message_textbox.bind("<Return>", send_message)
+
+            # Configure tags for message box
+            message_box.tag_configure("user_message", foreground=BLUE)
+            message_box.tag_configure("other_message", foreground=DARK_GREY)
+
+            def listen_for_messages_from_server(client):
+                while 1:
+                    try:
+                        message = client.recv(2048).decode('utf-8')
+                        if message != '':
+                            username = message.split("~")[0]
+                            content = message.split('~')[1]
+
+                            add_message(f"[{username}] {content}", is_user=(username == username_textbox.get()))
+                        else:
+                            messagebox.showerror("Error", "Message received from the client is empty")
+                    except:
+                        break
+
+            # Main function
+            def main():
+                root.mainloop()
+
+            if __name__ == '__main__':
+                main()
+
+            </code>
+        </pre>
+            <p>
+                <strong>Key Points:</strong>
+                <ul>
+                    <li>Connects to the specified server address <code>HOST</code> and <code>PORT</code> using the <code>socket</code> module.</li>
+                    <li>Prompts the user to provide a unique username for identification within the chatroom.</li>
+                    <li>Sends the username to the server for registration and displays join messages.</li>
+                    <li>Utilizes threads to concurrently listen for messages from the server and manage the user interface.</li>
+                    <li>Allows the user to send messages to the chatroom, handling empty messages gracefully.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>Important Functions:</strong>
+                <ul>
+                    <li><code>add_message</code> Appends messages to the user interface, distinguishing between user and other messages.</li>
+                    <li><code>connect</code> Initiates the connection process, sending the username to the server and starting the message listening thread.</li>
+                    <li><code>send_message</code> Sends user-typed messages to the server.</li>
+                    <li><code>listen_for_messages_from_server</code> Listens for messages from the server and updates the client's chat interface.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>CMD Syntax:<br></strong> 
+                    <img src="/clientcmd.png"></img>
+            </p>
+            <p>
+                <strong>Usage:</strong> Execute this script on client machines to participate in the chat.
+            </p>
+            <p>
+                <strong>Sample Output:<br></strong>
+                    <img src="/client username.png"></img>
+                    <img src="/client message.png"></img>
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Chat App Documentation. All rights reserved. | <a href="https://github.com/thelazyfrontenddev/Blog" target="_blank">View Python Files on GitHub</a></p>
+    </footer>
+
+</body>
+</html>

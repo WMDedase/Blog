@@ -1,0 +1,160 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+header {
+    background-color: #3498db;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+}
+
+header h1 {
+    color: #fff;
+    text-align: center;
+}
+
+nav {
+    background-color: #2c3e50;
+    color: #ecf0f1; 
+    padding: 1em;
+    border-bottom: 2px solid #1f2c39;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+nav li {
+    display: inline;
+    margin-right: 20px;
+}
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 12px; 
+    border-radius: 5px; 
+}
+
+nav a:hover {
+    background-color: #1f2c39; 
+    text-decoration: none;
+}
+section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+h1, h2 {
+    color: #3498db;
+}
+
+.introduction p {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+code {
+    display: block;
+    background-color: #282c34;
+    color: #abb2bf;
+    padding: 10px;
+    margin: 15px 0;
+    border-radius: 5px;
+    font-size: 14px;
+    overflow-x: auto;
+}
+
+code span {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+pre {
+    background-color: #f4f4f4;
+    padding: 1em;
+    overflow-x: auto;
+}
+
+.explanation p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+ul {
+    margin-bottom: 15px;
+}
+
+.content {
+    margin-top: 15px;
+}
+
+.content p {
+    margin-bottom: 15px;
+}
+
+.sample-output {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    background-color: #2c3e50; 
+    color: #ecf0f1; 
+    text-align: center;
+    padding: 1em;
+    bottom: 0;
+    width: 100%;
+}
+
+h3 {
+    color: #abb2bf;
+}
+
+h7 {
+    color: #abb2bf;
+}
+
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+footer a {
+    margin-top: 10px;
+    display: inline-block;
+    color: #ecf0f1;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
